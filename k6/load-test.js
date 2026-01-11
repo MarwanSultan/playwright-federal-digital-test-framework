@@ -12,14 +12,14 @@ const activeUsers = new Gauge('active_users');
 // Test options
 export const options = {
   stages: [
-    { duration: '30s', target: 10 },  // Ramp up
-    { duration: '1m', target: 50 },   // Stay at 50 users
-    { duration: '30s', target: 0 },   // Ramp down
+    { duration: '30s', target: 10 }, // Ramp up
+    { duration: '1m', target: 50 }, // Stay at 50 users
+    { duration: '30s', target: 0 }, // Ramp down
   ],
   thresholds: {
-    'http_req_duration': ['p(95)<500', 'p(99)<1000'],
-    'errors': ['rate<0.1'], // Less than 10% errors
-    'http_req_failed': ['rate<0.05'], // Less than 5% failed requests
+    http_req_duration: ['p(95)<500', 'p(99)<1000'],
+    errors: ['rate<0.1'], // Less than 10% errors
+    http_req_failed: ['rate<0.05'], // Less than 5% failed requests
   },
 };
 
@@ -45,7 +45,7 @@ export default function () {
     apiDuration.add(res.timings.duration);
     errorRate.add(res.status !== 200);
     activeUsers.add(1);
-    
+
     if (res.status === 200) {
       successCount.add(1);
     }
@@ -57,7 +57,7 @@ export default function () {
     const apiRes = http.get(`${API_BASE_URL}/v1/veterans`, {
       headers: {
         'Content-Type': 'application/json',
-        'apikey': API_KEY,
+        apikey: API_KEY,
       },
       tags: { name: 'API' },
     });
@@ -65,12 +65,13 @@ export default function () {
     check(apiRes, {
       'API status is 2xx or 3xx': (r) => r.status < 400,
       'API response time < 500ms': (r) => r.timings.duration < 500,
-      'API has required headers': (r) => r.headers['content-type'] && r.headers['x-request-id'],
+      'API has required headers': (r) =>
+        r.headers['content-type'] && r.headers['x-request-id'],
     });
 
     apiDuration.add(apiRes.timings.duration);
     errorRate.add(apiRes.status >= 400);
-    
+
     if (apiRes.status < 400) {
       successCount.add(1);
     }
@@ -90,7 +91,7 @@ export default function () {
           'Content-Type': 'application/json',
         },
         tags: { name: 'Login' },
-      }
+      },
     );
 
     check(loginRes, {
@@ -129,7 +130,7 @@ export default function () {
     for (let i = 0; i < 20; i++) {
       const res = http.get(`${API_BASE_URL}/v1/veterans`, {
         headers: {
-          'apikey': API_KEY,
+          apikey: API_KEY,
         },
         tags: { name: 'RateLimitTest' },
       });
@@ -195,9 +196,9 @@ export function handleSummary(data) {
     
     Thresholds: ${data.metrics.http_req_duration ? 'PASSED' : 'FAILED'}
   `;
-  
+
   console.log(summary);
   return {
-    'stdout': summary,
+    stdout: summary,
   };
 }

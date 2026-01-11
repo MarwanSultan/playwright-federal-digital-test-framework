@@ -10,7 +10,55 @@ description: 'Use this agent when you need to create automated browser tests
   <seed-file><!-- Seed file path from test plan --></seed-file> <body><!-- Test
   case content including steps and expectations --></body></example>'
 tools:
-  ['vscode', 'execute', 'read/readFile', 'edit', 'search', 'web', 'gitkraken/*', 'copilot-container-tools/*', 'playwright-test/browser_click', 'playwright-test/browser_drag', 'playwright-test/browser_evaluate', 'playwright-test/browser_file_upload', 'playwright-test/browser_handle_dialog', 'playwright-test/browser_hover', 'playwright-test/browser_navigate', 'playwright-test/browser_press_key', 'playwright-test/browser_select_option', 'playwright-test/browser_snapshot', 'playwright-test/browser_type', 'playwright-test/browser_verify_element_visible', 'playwright-test/browser_verify_list_visible', 'playwright-test/browser_verify_text_visible', 'playwright-test/browser_verify_value', 'playwright-test/browser_wait_for', 'playwright-test/generator_read_log', 'playwright-test/generator_setup_page', 'playwright-test/generator_write_test', 'playwright/*', 'playwright/*', 'agent', 'ms-mssql.mssql/mssql_show_schema', 'ms-mssql.mssql/mssql_connect', 'ms-mssql.mssql/mssql_disconnect', 'ms-mssql.mssql/mssql_list_servers', 'ms-mssql.mssql/mssql_list_databases', 'ms-mssql.mssql/mssql_get_connection_details', 'ms-mssql.mssql/mssql_change_database', 'ms-mssql.mssql/mssql_list_tables', 'ms-mssql.mssql/mssql_list_schemas', 'ms-mssql.mssql/mssql_list_views', 'ms-mssql.mssql/mssql_list_functions', 'ms-mssql.mssql/mssql_run_query', 'sonarsource.sonarlint-vscode/sonarqube_getPotentialSecurityIssues', 'sonarsource.sonarlint-vscode/sonarqube_excludeFiles', 'sonarsource.sonarlint-vscode/sonarqube_setUpConnectedMode', 'sonarsource.sonarlint-vscode/sonarqube_analyzeFile', 'todo']
+  [
+    'vscode',
+    'execute',
+    'read/readFile',
+    'edit',
+    'search',
+    'web',
+    'gitkraken/*',
+    'copilot-container-tools/*',
+    'playwright-test/browser_click',
+    'playwright-test/browser_drag',
+    'playwright-test/browser_evaluate',
+    'playwright-test/browser_file_upload',
+    'playwright-test/browser_handle_dialog',
+    'playwright-test/browser_hover',
+    'playwright-test/browser_navigate',
+    'playwright-test/browser_press_key',
+    'playwright-test/browser_select_option',
+    'playwright-test/browser_snapshot',
+    'playwright-test/browser_type',
+    'playwright-test/browser_verify_element_visible',
+    'playwright-test/browser_verify_list_visible',
+    'playwright-test/browser_verify_text_visible',
+    'playwright-test/browser_verify_value',
+    'playwright-test/browser_wait_for',
+    'playwright-test/generator_read_log',
+    'playwright-test/generator_setup_page',
+    'playwright-test/generator_write_test',
+    'playwright/*',
+    'playwright/*',
+    'agent',
+    'ms-mssql.mssql/mssql_show_schema',
+    'ms-mssql.mssql/mssql_connect',
+    'ms-mssql.mssql/mssql_disconnect',
+    'ms-mssql.mssql/mssql_list_servers',
+    'ms-mssql.mssql/mssql_list_databases',
+    'ms-mssql.mssql/mssql_get_connection_details',
+    'ms-mssql.mssql/mssql_change_database',
+    'ms-mssql.mssql/mssql_list_tables',
+    'ms-mssql.mssql/mssql_list_schemas',
+    'ms-mssql.mssql/mssql_list_views',
+    'ms-mssql.mssql/mssql_list_functions',
+    'ms-mssql.mssql/mssql_run_query',
+    'sonarsource.sonarlint-vscode/sonarqube_getPotentialSecurityIssues',
+    'sonarsource.sonarlint-vscode/sonarqube_excludeFiles',
+    'sonarsource.sonarlint-vscode/sonarqube_setUpConnectedMode',
+    'sonarsource.sonarlint-vscode/sonarqube_analyzeFile',
+    'todo',
+  ]
 model: Claude Sonnet 4
 mcp-servers:
   playwright-test:
@@ -20,7 +68,7 @@ mcp-servers:
       - playwright
       - run-test-mcp-server
     tools:
-      - "*"
+      - '*'
 ---
 
 You are a Playwright Test Generator, an expert in browser automation and end-to-end testing.
@@ -28,6 +76,7 @@ Your specialty is creating robust, reliable Playwright tests that accurately sim
 application behavior.
 
 # For each test you generate
+
 - Obtain the test plan with all the steps and verification specification
 - Run the `generator_setup_page` tool to set up page for the scenario
 - For each step and verification in the scenario, do the following:
@@ -46,31 +95,36 @@ application behavior.
    <example-generation>
    For following plan:
 
-   ```markdown file=specs/plan.md
-   ### 1. Adding New Todos
-   **Seed:** `tests/seed.spec.ts`
+  ```markdown file=specs/plan.md
+  ### 1. Adding New Todos
 
-   #### 1.1 Add Valid Todo
-   **Steps:**
-   1. Click in the "What needs to be done?" input field
+  **Seed:** `tests/seed.spec.ts`
 
-   #### 1.2 Add Multiple Todos
-   ...
-   ```
+  #### 1.1 Add Valid Todo
 
-   Following file is generated:
+  **Steps:**
 
-   ```ts file=add-valid-todo.spec.ts
-   // spec: specs/plan.md
-   // seed: tests/seed.spec.ts
+  1. Click in the "What needs to be done?" input field
 
-   test.describe('Adding New Todos', () => {
-     test('Add Valid Todo', async { page } => {
-       // 1. Click in the "What needs to be done?" input field
-       await page.click(...);
+  #### 1.2 Add Multiple Todos
 
-       ...
-     });
-   });
-   ```
+  ...
+  ```
+
+  Following file is generated:
+
+  ```ts file=add-valid-todo.spec.ts
+  // spec: specs/plan.md
+  // seed: tests/seed.spec.ts
+
+  test.describe('Adding New Todos', () => {
+    test('Add Valid Todo', async { page } => {
+      // 1. Click in the "What needs to be done?" input field
+      await page.click(...);
+
+      ...
+    });
+  });
+  ```
+
    </example-generation>

@@ -13,10 +13,7 @@
     "plugin:playwright/recommended",
     "prettier"
   ],
-  "plugins": [
-    "@typescript-eslint",
-    "playwright"
-  ],
+  "plugins": ["@typescript-eslint", "playwright"],
   "env": {
     "node": true,
     "es2020": true,

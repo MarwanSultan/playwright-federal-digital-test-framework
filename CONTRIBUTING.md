@@ -3,6 +3,7 @@
 Thank you for contributing to the VA's digital services test automation framework! This document provides guidelines and instructions for contributing.
 
 ## Table of Contents
+
 - [Code of Conduct](#code-of-conduct)
 - [Getting Started](#getting-started)
 - [Development Workflow](#development-workflow)
@@ -15,6 +16,7 @@ Thank you for contributing to the VA's digital services test automation framewor
 ## Code of Conduct
 
 We are committed to providing a welcoming and inclusive environment. All contributors are expected to:
+
 - Be respectful and inclusive
 - Welcome constructive feedback
 - Focus on what benefits the community
@@ -23,6 +25,7 @@ We are committed to providing a welcoming and inclusive environment. All contrib
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js 20 or later
 - npm 10 or later
 - Git
@@ -46,6 +49,7 @@ npm run test
 ```
 
 ### Recommended VS Code Extensions
+
 - ESLint
 - Prettier
 - Playwright Test for VS Code
@@ -68,6 +72,7 @@ git checkout -b feature/ISSUE-123-add-login-tests
 ### Make Your Changes
 
 Follow the established project structure:
+
 ```
 tests/
   ├── smoke/          # Quick smoke tests
@@ -99,6 +104,7 @@ npm run test:a11y
 ## Testing Requirements
 
 ### Unit Tests
+
 - Minimum 70% code coverage
 - Test both happy path and error cases
 - Use descriptive test names
@@ -116,6 +122,7 @@ describe('MyFunction', () => {
 ```
 
 ### E2E Tests (Playwright)
+
 - Test critical user journeys
 - Include accessibility assertions
 - Use proper waits and selectors
@@ -131,18 +138,23 @@ test('should complete user login flow', async ({ page }) => {
 ```
 
 ### Accessibility Tests
+
 All UI changes require accessibility testing:
+
 - Run `npm run test:a11y`
 - Test with keyboard navigation
 - Test with screen reader
 
 ### Contract/API Tests
+
 API changes require contract tests:
+
 - Validate response schema
 - Test error scenarios
 - Verify authentication
 
 ### Performance Tests
+
 - Must not negatively impact Lighthouse scores
 - Document any performance trade-offs
 
@@ -159,6 +171,7 @@ API changes require contract tests:
 ```
 
 ### Types
+
 - **feat**: A new feature
 - **fix**: A bug fix
 - **docs**: Documentation only
@@ -198,6 +211,7 @@ Fixes #456
 ### Before Submitting PR
 
 1. **Ensure all local tests pass**
+
    ```bash
    npm run ci:pr
    ```
@@ -221,6 +235,7 @@ Fixes #456
 ### PR Review Checklist
 
 Your PR should:
+
 - [ ] Have a descriptive title
 - [ ] Include a clear description
 - [ ] Link related issues
@@ -247,7 +262,9 @@ Your PR should:
 const userAuthenticationToken = getAuthToken();
 
 // Use arrow functions
-const handleClick = () => { /* ... */ };
+const handleClick = () => {
+  /* ... */
+};
 
 // Use const by default, let only when needed
 const defaultTimeout = 5000;
@@ -272,7 +289,7 @@ describe('Feature: User Authentication', () => {
     it('should display form elements', async () => {
       // Arrange
       await page.goto('/login');
-      
+
       // Act & Assert
       await expect(page.locator('input[name="email"]')).toBeVisible();
     });
@@ -304,6 +321,7 @@ test('should be navigable with keyboard', async ({ page }) => {
 ## Security Guidelines
 
 ### What NOT to Do
+
 - ❌ Never commit secrets, API keys, or credentials
 - ❌ Never use real user data in tests
 - ❌ Never hardcode sensitive information
@@ -311,6 +329,7 @@ test('should be navigable with keyboard', async ({ page }) => {
 - ❌ Never log sensitive data
 
 ### What TO Do
+
 - ✅ Use environment variables for configuration
 - ✅ Use test fixtures and mock data
 - ✅ Use .gitignore for sensitive files
@@ -365,6 +384,7 @@ npm run test:watch
 Our CI/CD pipeline runs on every PR and push:
 
 ### PR Pipeline (8-10 min)
+
 - Lint & Format
 - Unit Tests
 - Contract Tests
@@ -373,6 +393,7 @@ Our CI/CD pipeline runs on every PR and push:
 - Security Scan
 
 ### Merge Pipeline (30-45 min)
+
 - All PR checks
 - Full E2E suite (multi-browser)
 - Lighthouse CI
@@ -385,6 +406,7 @@ All checks must pass before merge to main.
 ## Release Process
 
 Releases are managed through GitHub Actions:
+
 1. Staging deployment (automatic after merge)
 2. Canary deployment (5% traffic) - manual trigger
 3. Production deployment (100% traffic) - manual trigger

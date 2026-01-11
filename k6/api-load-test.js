@@ -9,14 +9,14 @@ const activeVirtualUsers = new Gauge('active_users');
 
 export const options = {
   stages: [
-    { duration: '30s', target: 50 },   // Ramp to 50 users
+    { duration: '30s', target: 50 }, // Ramp to 50 users
     { duration: '1m30s', target: 100 }, // Ramp to 100 users
-    { duration: '20s', target: 0 },     // Scale down
+    { duration: '20s', target: 0 }, // Scale down
   ],
   thresholds: {
-    'response_time': ['p(95)<500', 'p(99)<1000'],
-    'api_errors': ['rate<0.1'],
-    'http_req_failed': ['rate<0.05'],
+    response_time: ['p(95)<500', 'p(99)<1000'],
+    api_errors: ['rate<0.1'],
+    http_req_failed: ['rate<0.05'],
   },
 };
 
@@ -30,7 +30,7 @@ export default function () {
     const params = {
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${API_KEY}`,
+        Authorization: `Bearer ${API_KEY}`,
       },
       tags: { name: 'BenefitsAPI' },
     };
@@ -45,7 +45,7 @@ export default function () {
 
     responseTime.add(res.timings.duration);
     errorRate.add(res.status !== 200);
-    
+
     if (res.status === 200) {
       successCount.add(1);
     }
@@ -56,7 +56,7 @@ export default function () {
   group('Health Records API Load Test', () => {
     const params = {
       headers: {
-        'Authorization': `Bearer ${API_KEY}`,
+        Authorization: `Bearer ${API_KEY}`,
       },
       tags: { name: 'HealthAPI' },
     };
@@ -77,11 +77,14 @@ export default function () {
   group('Facilities API Search Load Test', () => {
     const params = {
       headers: {
-        'Authorization': `Bearer ${API_KEY}`,
+        Authorization: `Bearer ${API_KEY}`,
       },
     };
 
-    const res = http.get(`${API_BASE_URL}/facilities/search?lat=38.9&lon=-77.0&distance=10`, params);
+    const res = http.get(
+      `${API_BASE_URL}/facilities/search?lat=38.9&lon=-77.0&distance=10`,
+      params,
+    );
 
     check(res, {
       'status is valid': (r) => [200, 400, 404].includes(r.status),
@@ -96,7 +99,7 @@ export default function () {
   group('Forms API Load Test', () => {
     const params = {
       headers: {
-        'Authorization': `Bearer ${API_KEY}`,
+        Authorization: `Bearer ${API_KEY}`,
       },
     };
 
@@ -116,7 +119,7 @@ export default function () {
   group('Appeals API Load Test', () => {
     const params = {
       headers: {
-        'Authorization': `Bearer ${API_KEY}`,
+        Authorization: `Bearer ${API_KEY}`,
       },
     };
 
@@ -136,7 +139,7 @@ export default function () {
     for (let i = 0; i < 15; i++) {
       const params = {
         headers: {
-          'Authorization': `Bearer ${API_KEY}`,
+          Authorization: `Bearer ${API_KEY}`,
         },
       };
 

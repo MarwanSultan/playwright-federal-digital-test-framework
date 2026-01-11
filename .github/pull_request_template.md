@@ -1,11 +1,13 @@
 # Pull Request
 
 ## Description
+
 <!-- Provide a brief description of the changes in this PR -->
 
 Fixes #(issue number)
 
 ## Type of Change
+
 <!-- Mark the relevant option with an "x" -->
 
 - [ ] Bug fix (non-breaking change which fixes an issue)
@@ -17,6 +19,7 @@ Fixes #(issue number)
 - [ ] Performance improvement
 
 ## Changes Made
+
 <!-- List the specific changes made in this PR -->
 
 - Change 1
@@ -24,6 +27,7 @@ Fixes #(issue number)
 - Change 3
 
 ## Test Coverage Checklist
+
 <!-- Verify that your changes are properly tested -->
 
 - [ ] Unit tests added/updated
@@ -34,6 +38,7 @@ Fixes #(issue number)
 - [ ] Manual testing completed
 
 ## Security Checklist
+
 <!-- Security review before submitting -->
 
 - [ ] No hardcoded credentials or secrets
@@ -44,6 +49,7 @@ Fixes #(issue number)
 - [ ] No new dependencies with known vulnerabilities
 
 ## Accessibility Checklist
+
 <!-- WCAG 2.1 Level AA compliance -->
 
 - [ ] Keyboard navigation works
@@ -54,6 +60,7 @@ Fixes #(issue number)
 - [ ] No flashing content
 
 ## Code Quality Checklist
+
 <!-- Code review requirements -->
 
 - [ ] Lint passes (`npm run lint`)
@@ -64,6 +71,7 @@ Fixes #(issue number)
 - [ ] Code follows project conventions
 
 ## Performance Impact
+
 <!-- Assess performance implications -->
 
 - Estimated performance impact: None / Minimal / Moderate / Significant
@@ -71,6 +79,7 @@ Fixes #(issue number)
 - Bundle size change: N/A / Reduced / Unchanged / Increased
 
 ## Deployment Notes
+
 <!-- Any special deployment considerations -->
 
 - [ ] No database migrations needed
@@ -79,9 +88,11 @@ Fixes #(issue number)
 - [ ] Rollback procedure documented
 
 ## Screenshots (if applicable)
+
 <!-- Add screenshots for UI changes -->
 
 ## Related Issues
+
 <!-- Link related issues -->
 
 - Closes #(issue number)
@@ -92,6 +103,7 @@ Fixes #(issue number)
 ## Reviewer Guidance
 
 **Reviewers**: Please verify the following:
+
 1. Code changes align with the description
 2. All tests are passing
 3. Security and accessibility standards are met
@@ -99,6 +111,7 @@ Fixes #(issue number)
 5. Documentation is updated if needed
 
 **CI/CD Status**: All checks must pass before merge
+
 - ✅ Lint & Format
 - ✅ Unit Tests
 - ✅ Contract Tests

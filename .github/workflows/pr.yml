@@ -115,7 +115,7 @@ jobs:
     strategy:
       matrix:
         browser: [chromium]
-        
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -230,7 +230,15 @@ jobs:
   pr-summary:
     name: PR Summary
     runs-on: ubuntu-latest
-    needs: [lint-and-format, unit-tests, contract-tests, smoke-tests, accessibility-scan, security-scan]
+    needs:
+      [
+        lint-and-format,
+        unit-tests,
+        contract-tests,
+        smoke-tests,
+        accessibility-scan,
+        security-scan,
+      ]
     if: always()
 
     steps:
@@ -264,7 +272,7 @@ jobs:
             | Accessibility | ${{ needs.accessibility-scan.result == 'success' && '✅ PASS' || '⚠️ WARN' }} |
             | Security | ${{ needs.security-scan.result == 'success' && '✅ PASS' || '⚠️ WARN' }} |
             `;
-            
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,

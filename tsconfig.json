@@ -31,17 +31,6 @@
       "@tests/*": ["tests/*"]
     }
   },
-  "include": [
-    "src/**/*",
-    "tests/**/*",
-    "k6/**/*",
-    "*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "build",
-    "coverage",
-    "playwright-report"
-  ]
+  "include": ["src/**/*", "tests/**/*", "k6/**/*", "*.ts"],
+  "exclude": ["node_modules", "dist", "build", "coverage", "playwright-report"]
 }

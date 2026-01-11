@@ -1,6 +1,7 @@
 # Test Plan: Agile + CI/CD for digital.va.gov
 
 ## Executive Summary
+
 This test plan covers 12 key domain areas for digital.va.gov (Lighthouse API Library, VA SaaS/PaaS Catalog, Accessibility, Mobile Apps Hub, AI Strategy, EHRM, Digital Transformation, Web Governance, Software Factory, Secure Identity & Login, Analytics, and Communications). It prescribes Agile practices, automated test types, CI/CD pipeline stages, environments, tooling, and a phased roadmap.
 
 ---
@@ -20,16 +21,19 @@ This test plan covers 12 key domain areas for digital.va.gov (Lighthouse API Lib
 ## 2. Agile Testing Approach 🧩
 
 ### Sprint-Based Testing
+
 - Use 2-week sprints; treat testing as part of each story
 - Include **Acceptance Criteria** and automated tests in the Definition of Done (DoD)
 - Leverage BDD/TDD practices for critical flows (Gherkin, test-first)
 
 ### Test Backlog Management
+
 - Maintain a prioritized **Test Backlog** with explicit risk-based priorities
 - Include "test tasks" checklist in PR templates
 - Allocate sprint capacity for test debt reduction and flaky test triage
 
 ### Example Acceptance Criteria Format
+
 ```gherkin
 Given <precondition>
 When <action>
@@ -47,20 +51,21 @@ Notes:
 
 ### Test Layers
 
-| Layer | Type | Tools | Execution |
-|-------|------|-------|-----------|
-| **Unit Tests** | Fast, high coverage | Jest, Mocha | Dev local + PR CI |
-| **Integration Tests** | Service & persistence layer | Integration test frameworks | Merge-to-main |
-| **Contract Tests** | API schema validation | Pact, OpenAPI validators | PR + merge |
-| **API Tests** | Auth, rate-limits, headers | Supertest, k6 | PR + merge |
-| **E2E Tests** | Critical user journeys | Playwright | PR (smoke) + merge (full) |
-| **Accessibility Tests** | WCAG compliance | axe-core, Pa11y | PR + scheduled audits |
-| **Performance Tests** | Load, response times, budgets | Lighthouse CI, k6 | Scheduled runs |
-| **Security Tests** | SAST, DAST, SCA, IaC | SonarQube, OWASP ZAP, Snyk | PR + merge |
-| **Mobile Tests** | Cross-device compatibility | BrowserStack / device farm | Scheduled matrix runs |
-| **Synthetic Monitoring** | Production health checks | Custom scripts, scheduled | Production |
+| Layer                    | Type                          | Tools                       | Execution                 |
+| ------------------------ | ----------------------------- | --------------------------- | ------------------------- |
+| **Unit Tests**           | Fast, high coverage           | Jest, Mocha                 | Dev local + PR CI         |
+| **Integration Tests**    | Service & persistence layer   | Integration test frameworks | Merge-to-main             |
+| **Contract Tests**       | API schema validation         | Pact, OpenAPI validators    | PR + merge                |
+| **API Tests**            | Auth, rate-limits, headers    | Supertest, k6               | PR + merge                |
+| **E2E Tests**            | Critical user journeys        | Playwright                  | PR (smoke) + merge (full) |
+| **Accessibility Tests**  | WCAG compliance               | axe-core, Pa11y             | PR + scheduled audits     |
+| **Performance Tests**    | Load, response times, budgets | Lighthouse CI, k6           | Scheduled runs            |
+| **Security Tests**       | SAST, DAST, SCA, IaC          | SonarQube, OWASP ZAP, Snyk  | PR + merge                |
+| **Mobile Tests**         | Cross-device compatibility    | BrowserStack / device farm  | Scheduled matrix runs     |
+| **Synthetic Monitoring** | Production health checks      | Custom scripts, scheduled   | Production                |
 
 ### Coverage Targets
+
 - **Unit**: 70–90%
 - **Integration**: Targeted for critical services
 - **E2E**: Only critical flows (keep suite fast, < 15 min)
@@ -152,14 +157,15 @@ PR Approved & Merged to main
 
 ### Environment Strategy
 
-| Environment | Purpose | Data | Refresh |
-|-------------|---------|------|---------|
-| **Local Dev** | Developer sandbox | Fixtures, mocks, containers | On-demand |
-| **PR Preview** | Ephemeral per-PR deployments | Synthetic, non-PHI | Auto-cleanup after PR |
-| **Staging** | Pre-production mirror | Production-like schema, test data | Nightly |
-| **Production** | Live service | Real data with access controls | N/A |
+| Environment    | Purpose                      | Data                              | Refresh               |
+| -------------- | ---------------------------- | --------------------------------- | --------------------- |
+| **Local Dev**  | Developer sandbox            | Fixtures, mocks, containers       | On-demand             |
+| **PR Preview** | Ephemeral per-PR deployments | Synthetic, non-PHI                | Auto-cleanup after PR |
+| **Staging**    | Pre-production mirror        | Production-like schema, test data | Nightly               |
+| **Production** | Live service                 | Real data with access controls    | N/A                   |
 
 ### Test Data Management
+
 - Use **ephemeral containers** and test snapshots in CI
 - Employ **service virtualization** (WireMock, MSW, Pact) to decouple third-party dependencies
 - Manage **sensitive data** via secrets store; redact PII in logs
@@ -172,20 +178,21 @@ PR Approved & Merged to main
 
 ### Core Tools
 
-| Category | Tools | Purpose |
-|----------|-------|---------|
-| **E2E Testing** | Playwright | Critical user journeys, cross-browser |
-| **API Testing** | Supertest, k6 | Contract, integration, load tests |
-| **Contract Tests** | Pact, OpenAPI Validator | Consumer-driven contracts |
-| **Accessibility** | axe-core, Pa11y, Lighthouse | WCAG AA compliance, audits |
-| **Performance** | Lighthouse CI, k6 | Budgets, load, response times |
-| **Security Scanning** | SonarQube, OWASP ZAP, Snyk, tfsec | SAST, DAST, SCA, IaC |
-| **Test Reporting** | Allure, Playwright HTML, GitHub artifacts | Test results, trends |
-| **Observability** | Datadog, Grafana, Prometheus | Synthetic monitoring, metrics |
-| **Notifications** | GitHub Actions, Slack, MS Teams | Pipeline status, alerts |
-| **CI/CD Platform** | GitHub Actions / GitLab CI | Pipeline orchestration |
+| Category              | Tools                                     | Purpose                               |
+| --------------------- | ----------------------------------------- | ------------------------------------- |
+| **E2E Testing**       | Playwright                                | Critical user journeys, cross-browser |
+| **API Testing**       | Supertest, k6                             | Contract, integration, load tests     |
+| **Contract Tests**    | Pact, OpenAPI Validator                   | Consumer-driven contracts             |
+| **Accessibility**     | axe-core, Pa11y, Lighthouse               | WCAG AA compliance, audits            |
+| **Performance**       | Lighthouse CI, k6                         | Budgets, load, response times         |
+| **Security Scanning** | SonarQube, OWASP ZAP, Snyk, tfsec         | SAST, DAST, SCA, IaC                  |
+| **Test Reporting**    | Allure, Playwright HTML, GitHub artifacts | Test results, trends                  |
+| **Observability**     | Datadog, Grafana, Prometheus              | Synthetic monitoring, metrics         |
+| **Notifications**     | GitHub Actions, Slack, MS Teams           | Pipeline status, alerts               |
+| **CI/CD Platform**    | GitHub Actions / GitLab CI                | Pipeline orchestration                |
 
 ### Configuration Example
+
 - `playwright.config.ts`: Configure browsers, timeouts, retries, traces, video
 - `lighthouse.config.js`: Set performance budgets (LCP, FID, CLS)
 - `.github/workflows/ci.yml`: PR and merge pipelines
@@ -197,15 +204,18 @@ PR Approved & Merged to main
 ## 7. Accessibility & Compliance ♿
 
 ### Automation
+
 - **WCAG AA checks** in PR pipelines (axe-core, Pa11y)
 - **Color contrast**, **heading hierarchy**, **ARIA labels** validation
 - **Keyboard navigation** scripting for critical flows
 
 ### Manual Review
+
 - Include a11y expert in manual QA for complex UI patterns
 - Test with assistive technology (screen readers, voice control)
 
 ### Governance
+
 - **Accessibility is part of DoD** for all UI stories
 - Create a11y tickets for violations exceeding threshold
 - Document remediation steps in commits
@@ -216,6 +226,7 @@ PR Approved & Merged to main
 ## 8. Security & Federal Compliance 🔐
 
 ### Scanning & Controls
+
 - **SAST** (SonarQube, CodeQL): code vulnerabilities
 - **DAST** (OWASP ZAP): runtime vulnerabilities
 - **SCA** (Snyk, npm audit): dependency vulnerabilities
@@ -223,12 +234,14 @@ PR Approved & Merged to main
 - **Secrets scanning**: Prevent credential leaks
 
 ### Compliance
+
 - Enforce **FedRAMP/FISMA controls** in environment provisioning
 - Manage secrets via **secure vaults** (AWS Secrets Manager, HashiCorp Vault)
 - Require **security sign-off** for major releases
 - Perform **annual penetration tests** and audit logs
 
 ### Required Gates
+
 - No high-severity SAST/DAST findings in PRs
 - All dependencies scanned for known CVEs
 - Security review approval before production deploy
@@ -238,18 +251,21 @@ PR Approved & Merged to main
 ## 9. Flakiness & Maintenance Strategy 🧹
 
 ### Flaky Test Policy
+
 - **Retry strategy**: Rerun up to 3 times before marking as failed
 - **Quarantine unstable tests**: Move to a separate suite, create bug ticket
 - Investigate root cause (timing issues, async operations, test isolation)
 - Fix or remove within the next sprint
 
 ### Test Hygiene Sprints
+
 - Allocate **2–5% of sprint capacity** to test debt reduction
 - Review and refactor aging test code
 - Remove or consolidate redundant tests
 - Update assertions for maintainability
 
 ### Metrics to Track
+
 - Flaky test rate (target: < 1%)
 - Mean time to fix (MTTF) for broken tests
 - Test suite execution time (target: PR < 15 min, merge < 45 min)
@@ -261,22 +277,23 @@ PR Approved & Merged to main
 
 ### Key Metrics
 
-| Metric | Target | Review Cadence |
-|--------|--------|---|
-| PR test pass rate | > 95% | Weekly |
-| Pipeline duration (PR) | < 15 min | Weekly |
-| Pipeline duration (merge) | < 45 min | Weekly |
-| Flaky test rate | < 1% | Weekly |
-| Unit test coverage | 70–90% | Per sprint |
-| E2E critical flow coverage | 100% | Per release |
-| Mean time to detect failure | < 5 min | Weekly |
-| Mean time to fix (MTTF) | < 4 hours | Weekly |
-| Accessibility violations found (pre-prod) | 0 | Per sprint |
-| Security findings (high/critical) | 0 in prod | Per release |
-| Performance budget compliance | 100% | Per PR |
-| Lighthouse score (avg) | ≥ 85 | Per sprint |
+| Metric                                    | Target    | Review Cadence |
+| ----------------------------------------- | --------- | -------------- |
+| PR test pass rate                         | > 95%     | Weekly         |
+| Pipeline duration (PR)                    | < 15 min  | Weekly         |
+| Pipeline duration (merge)                 | < 45 min  | Weekly         |
+| Flaky test rate                           | < 1%      | Weekly         |
+| Unit test coverage                        | 70–90%    | Per sprint     |
+| E2E critical flow coverage                | 100%      | Per release    |
+| Mean time to detect failure               | < 5 min   | Weekly         |
+| Mean time to fix (MTTF)                   | < 4 hours | Weekly         |
+| Accessibility violations found (pre-prod) | 0         | Per sprint     |
+| Security findings (high/critical)         | 0 in prod | Per release    |
+| Performance budget compliance             | 100%      | Per PR         |
+| Lighthouse score (avg)                    | ≥ 85      | Per sprint     |
 
 ### Dashboard Components
+
 - **Pipeline status** (pass/fail rates, duration trends)
 - **Test coverage** (line, branch, feature coverage)
 - **Flakiness metrics** (trending flaky tests, retry rates)
@@ -292,6 +309,7 @@ PR Approved & Merged to main
 ## 11. Roadmap & Implementation Phases 🗺️
 
 ### Phase 0: Foundations (1–2 sprints)
+
 **Goal**: Establish baseline testing and CI/CD gates
 
 - [ ] Add linter & formatter (eslint, prettier)
@@ -307,6 +325,7 @@ PR Approved & Merged to main
 ---
 
 ### Phase 1: Expand Coverage (2–4 sprints)
+
 **Goal**: Comprehensive E2E and accessibility coverage
 
 - [ ] Build full Playwright E2E suite (top 10–15 user journeys)
@@ -322,6 +341,7 @@ PR Approved & Merged to main
 ---
 
 ### Phase 2: Security & Performance (2–3 sprints)
+
 **Goal**: Automate security scanning and load testing
 
 - [ ] Add DAST scanning (OWASP ZAP) to merge pipeline
@@ -338,6 +358,7 @@ PR Approved & Merged to main
 ---
 
 ### Phase 3: Production Confidence (ongoing)
+
 **Goal**: Continuous monitoring and canary deployments
 
 - [ ] Set up production synthetic monitors (health, login, critical flows)
@@ -356,42 +377,49 @@ PR Approved & Merged to main
 ## 12. Example Priority Test Cases 🔍
 
 ### Lighthouse API Library
+
 - **Contract Tests**: OpenAPI schema validation for all endpoints
 - **Auth Tests**: Token expiry, MFA, role-based access control (RBAC)
 - **Rate-Limiting**: Validate throttling & quota enforcement
 - **Error Handling**: Proper 4xx/5xx responses and error payloads
 
 ### Secure Identity & Login
+
 - **OIDC/SAML Flows**: Full authentication lifecycle
 - **Session Management**: Timeout, refresh token rotation
 - **MFA**: Multi-factor authentication flows (if applicable)
 - **Error Paths**: Invalid credentials, expired tokens, locked accounts
 
 ### Accessibility Guidance
+
 - **Automated Checks**: All pages pass WCAG AA (axe-core)
 - **Keyboard Navigation**: All interactive elements keyboard-accessible
 - **ARIA Labels**: Proper semantics for screen readers
 - **Color Contrast**: Minimum 4.5:1 ratio for text
 
 ### VA Mobile Apps Hub
+
 - **App Listing**: Correct app metadata and deep linking
 - **Download Redirect**: App Store/Play Store redirects work
 - **PWA Functionality**: Offline support, installability checks
 - **Device Compatibility**: Responsive on mobile, tablet, desktop
 
 ### Electronic Health Record Modernization (EHRM)
+
 - **Access Control**: Patient data access limited to authorized users
 - **Performance**: > 95th percentile response times under load
 - **Audit Logging**: All data access logged with timestamps
 - **Data Integrity**: CRUD operations maintain consistency
 
 ### AI at VA Strategy
+
 - **Model Output Sanity**: Results within expected ranges
 - **Data Drift Monitoring**: Model performance tracked over time
 - **Inference Speed**: Real-time model inference < 200ms
 - **Explainability**: Model decisions can be traced
 
 ### Web Governance & Standards
+
 - **Design System Compliance**: Components match design tokens
 - **Brand Consistency**: Logo, colors, fonts applied correctly
 - **Link Validation**: No broken internal/external links
@@ -401,16 +429,17 @@ PR Approved & Merged to main
 
 ## 13. Governance, Roles & Responsibilities 👥
 
-| Role | Responsibilities |
-|------|------------------|
-| **Developer** | Write unit tests, contract tests; submit PRs with test checklist |
-| **QA / Test Engineer** | Maintain E2E suite, exploratory testing, a11y audits, test reviews |
-| **SRE / DevOps** | Environment provisioning, canary deploys, monitoring, alerting |
-| **Security Engineer** | SAST/DAST configuration, CVE triage, security sign-off |
-| **Product Manager** | Define acceptance criteria, prioritize test scenarios |
-| **Engineering Manager** | Enforce DoD, allocate test-debt sprints, review metrics |
+| Role                    | Responsibilities                                                   |
+| ----------------------- | ------------------------------------------------------------------ |
+| **Developer**           | Write unit tests, contract tests; submit PRs with test checklist   |
+| **QA / Test Engineer**  | Maintain E2E suite, exploratory testing, a11y audits, test reviews |
+| **SRE / DevOps**        | Environment provisioning, canary deploys, monitoring, alerting     |
+| **Security Engineer**   | SAST/DAST configuration, CVE triage, security sign-off             |
+| **Product Manager**     | Define acceptance criteria, prioritize test scenarios              |
+| **Engineering Manager** | Enforce DoD, allocate test-debt sprints, review metrics            |
 
 ### Review Cadence
+
 - **Weekly**: Pipeline metrics, flaky tests, coverage trends
 - **Sprint**: Test backlog grooming, DoD compliance
 - **Monthly**: Security scan findings, performance trends
@@ -421,18 +450,21 @@ PR Approved & Merged to main
 ## 14. Next Steps (Actionable) ✅
 
 ### Immediate (Next 1–2 weeks)
+
 - [ ] Create PR template with test checklist
 - [ ] Initialize `.github/workflows/ci.yml` with PR pipeline (lint, unit, contract, smoke)
 - [ ] Add baseline smoke Playwright tests (`tests/smoke/`)
 - [ ] Configure Playwright HTML report uploads to artifacts
 
 ### Short-term (Weeks 3–4)
+
 - [ ] Set up Lighthouse CI & performance budgets
 - [ ] Integrate axe-core accessibility checks
 - [ ] Add cross-browser Playwright matrix (Chromium, Firefox)
 - [ ] Document test data strategy and staging environment
 
 ### Medium-term (Weeks 5–8)
+
 - [ ] Build full E2E suite for top 10 user journeys
 - [ ] Add SAST scanning (SonarQube / CodeQL)
 - [ ] Integrate SCA scanning (Snyk)
@@ -440,6 +472,7 @@ PR Approved & Merged to main
 - [ ] Set up k6 load tests
 
 ### Long-term (Weeks 9+)
+
 - [ ] Production synthetic monitoring
 - [ ] Canary deployment automation
 - [ ] Metrics dashboards (Grafana / Datadog)
@@ -450,11 +483,13 @@ PR Approved & Merged to main
 ## Appendix: References & Resources
 
 ### Agile & Testing Best Practices
+
 - [Agile Testing Manifesto](https://agiletestingmanifesto.org)
 - [Test Pyramid & Trophy (Kent C. Dodds)](https://kentcdodds.com/blog/common-mistakes-with-react-testing-library)
 - [ISTQB Agile Testing](https://www.istqb.org)
 
 ### Tools & Documentation
+
 - [Playwright Docs](https://playwright.dev)
 - [Lighthouse CI](https://github.com/GoogleChrome/lighthouse-ci)
 - [OWASP ZAP](https://www.zaproxy.org)
@@ -462,6 +497,7 @@ PR Approved & Merged to main
 - [axe-core](https://github.com/dequelabs/axe-core)
 
 ### Federal Compliance
+
 - [FedRAMP Requirements](https://www.fedramp.gov)
 - [WCAG 2.1 Guidelines](https://www.w3.org/WAI/WCAG21/quickref)
 - [NIST Cybersecurity Framework](https://www.nist.gov/cyberframework)
