@@ -1,0 +1,45 @@
+// .github/dependabot.yml
+version: 2
+updates:
+  # Enable version updates for npm dependencies
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+      time: '09:00'
+    open-pull-requests-limit: 5
+    reviewers:
+      - 'team/qa'
+    assignees:
+      - 'devops-team'
+    labels:
+      - 'dependencies'
+      - 'automated'
+    commit-message:
+      prefix: 'chore(deps):'
+      prefix-scope: 'npm'
+    allow:
+      - dependency-type: 'all'
+    ignore:
+      # Ignore major version updates for stable dependencies
+      - dependency-name: '@playwright/test'
+        update-types:
+          - 'version-update:semver-major'
+    pull-request-branch-name:
+      separator: '/'
+
+  # Enable version updates for GitHub Actions
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+      time: '09:00'
+    reviewers:
+      - 'team/devops'
+    labels:
+      - 'ci'
+      - 'automated'
+    commit-message:
+      prefix: 'ci(actions):'

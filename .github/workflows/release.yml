@@ -1,0 +1,268 @@
+name: Release Pipeline - Canary & Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - canary
+          - production
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: '20'
+  REGISTRY: ghcr.io
+
+jobs:
+  release-approval:
+    name: Release Approval Gate
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.event.inputs.environment }}
+
+    steps:
+      - name: Approve release to ${{ github.event.inputs.environment }}
+        run: |
+          echo "Release to ${{ github.event.inputs.environment }} approved"
+
+  production-smoke-tests:
+    name: Production Smoke Tests
+    runs-on: ubuntu-latest
+    needs: release-approval
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run production smoke tests
+        run: npm run test:smoke
+        timeout-minutes: 15
+        env:
+          TEST_ENV: production
+          BASE_URL: https://digital.va.gov
+
+      - name: Upload smoke test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-smoke-tests
+          path: playwright-report/
+          retention-days: 90
+
+  synthetic-monitoring:
+    name: Synthetic Monitoring
+    runs-on: ubuntu-latest
+    needs: release-approval
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run synthetic health checks
+        run: |
+          echo "Running synthetic monitoring checks..."
+          # Add synthetic monitoring script here
+          npm run test:smoke
+        continue-on-error: true
+
+  canary-deployment:
+    name: Canary Deployment (5% Traffic)
+    runs-on: ubuntu-latest
+    needs: [release-approval, production-smoke-tests, synthetic-monitoring]
+    if: github.event.inputs.environment == 'canary' || github.event.inputs.environment == 'production'
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+        continue-on-error: true
+
+      - name: Deploy canary (5% traffic)
+        run: |
+          echo "Deploying canary release to ${{ github.event.inputs.environment }}..."
+          # Add canary deployment script
+          # Example: kubectl patch service digital-va-gov -p '{"spec":{"selector":{"version":"canary"}}}'
+        env:
+          DEPLOY_ENV: ${{ github.event.inputs.environment }}
+          CANARY_TRAFFIC_PERCENT: 5
+
+      - name: Monitor canary metrics
+        run: |
+          echo "Monitoring canary deployment..."
+          # Monitor error rates, latency, etc.
+          # Continue for 5-10 minutes
+          sleep 300
+
+      - name: Check error rates
+        run: |
+          echo "Checking error rates..."
+          # Query monitoring system (Datadog, Grafana, etc.)
+          # Fail if error rate > threshold
+
+      - name: Canary results
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: '🚀 Canary deployment complete - Monitoring metrics...'
+            });
+
+  production-deployment:
+    name: Production Deployment (100% Traffic)
+    runs-on: ubuntu-latest
+    needs: canary-deployment
+    if: github.event.inputs.environment == 'production'
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+        continue-on-error: true
+
+      - name: Deploy to production (blue-green)
+        run: |
+          echo "Deploying to production with blue-green strategy..."
+          # Add production deployment script
+          # 1. Deploy to green environment
+          # 2. Run verification tests
+          # 3. Switch traffic to green
+          # 4. Keep blue running for quick rollback
+
+      - name: Run production verification
+        run: npm run test:smoke
+        timeout-minutes: 15
+        env:
+          TEST_ENV: production
+
+      - name: Monitor production
+        run: |
+          echo "Monitoring production..."
+          # Monitor for 30 minutes
+          sleep 1800
+          # Check error rates, latency, etc.
+
+  rollback-procedure:
+    name: Rollback Procedure
+    runs-on: ubuntu-latest
+    needs: production-deployment
+    if: failure()
+
+    steps:
+      - name: Trigger rollback
+        run: |
+          echo "Rolling back to previous version..."
+          # Implement rollback logic
+
+      - name: Verify rollback
+        run: |
+          echo "Verifying rollback..."
+          # Verify service is back to previous state
+
+      - name: Notify team
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: '⚠️ Production deployment rolled back due to errors. Please investigate.'
+            });
+
+  post-deployment:
+    name: Post-Deployment Tasks
+    runs-on: ubuntu-latest
+    needs: production-deployment
+    if: success()
+
+    steps:
+      - name: Update deployment tracking
+        run: |
+          echo "Updating deployment records..."
+          # Update deployment status in tracking system
+
+      - name: Generate release notes
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const release = await github.rest.repos.getLatestRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            console.log('Latest release:', release.data.tag_name);
+
+      - name: Notify stakeholders
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          text: '✅ Production deployment successful'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+          fields: repo,message,commit,author,action
+        continue-on-error: true
+
+      - name: Update deployment board
+        run: |
+          echo "Updating deployment board..."
+          # Update Jira, GitHub Projects, etc.

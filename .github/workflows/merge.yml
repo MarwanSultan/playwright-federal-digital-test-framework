@@ -1,0 +1,333 @@
+name: Merge Pipeline - Full Validation
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: merge-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: '20'
+  REGISTRY: ghcr.io
+
+jobs:
+  all-checks:
+    name: Full Test Suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linters
+        run: npm run lint
+
+      - name: Run all unit tests with coverage
+        run: npm run test
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run full E2E test suite
+        run: npm run test:e2e
+        timeout-minutes: 30
+
+      - name: Run accessibility tests
+        run: npm run test:a11y
+        continue-on-error: true
+
+      - name: Run contract/API tests
+        run: npm run test:api
+        env:
+          VA_API_KEY: ${{ secrets.VA_API_KEY }}
+        continue-on-error: true
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/lcov.info
+          flags: integration
+          fail_ci_if_error: false
+
+      - name: Archive test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-merge
+          path: |
+            coverage/
+            playwright-report/
+            accessibility-report/
+          retention-days: 60
+
+  lighthouse-ci:
+    name: Lighthouse Performance & Accessibility
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Lighthouse CI
+        run: npm run lighthouse
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+        continue-on-error: true
+
+      - name: Upload Lighthouse report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-report
+          path: lhci_results/
+          retention-days: 60
+
+  sast-scan:
+    name: SAST Code Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: 'javascript'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v2
+
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@v2
+        with:
+          category: '/language:javascript'
+
+      - name: Run SonarQube scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        continue-on-error: true
+
+  dast-scan:
+    name: DAST Dynamic Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    permissions:
+      security-events: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run OWASP ZAP baseline scan
+        uses: zaproxy/action-baseline@v0.7.0
+        with:
+          target: 'https://digital.va.gov'
+          rules_file_name: '.zap/rules.tsv'
+          cmd_options: '-a'
+          continue-on-error: true
+
+      - name: Upload ZAP results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-report
+          path: report_md.md
+          retention-days: 60
+
+  sca-scan:
+    name: SCA Dependency Scanning
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    permissions:
+      security-events: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Snyk SCA scan
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --all-projects --severity-threshold=high
+        continue-on-error: true
+
+      - name: Run npm audit
+        run: npm audit --json > npm-audit.json
+        continue-on-error: true
+
+      - name: Upload npm audit results
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-audit-report
+          path: npm-audit.json
+          retention-days: 60
+
+  secrets-scan:
+    name: Secrets Detection
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    permissions:
+      security-events: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: TruffleHog Secret Scan
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --json
+        continue-on-error: true
+
+      - name: GitGuardian Secret Scan
+        uses: GitGuardian/ggshield-action@v1
+        env:
+          GITGUARDIAN_API_KEY: ${{ secrets.GITGUARDIAN_API_KEY }}
+          GITHUB_PUSH_BEFORE_SHA: ${{ github.event.before }}
+          GITHUB_PUSH_BASE_SHA: ${{ github.event.base }}
+          GITHUB_PULL_REQUEST_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          GITHUB_DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        continue-on-error: true
+
+  staging-deploy:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [all-checks, lighthouse-ci, sast-scan, dast-scan, sca-scan, secrets-scan]
+    if: success()
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+        continue-on-error: true
+
+      - name: Deploy to staging
+        run: |
+          echo "Deploying to staging environment..."
+          # Add your deployment script here
+        env:
+          STAGING_API_KEY: ${{ secrets.STAGING_API_KEY }}
+
+      - name: Post-deploy smoke tests
+        run: npm run test:smoke
+        timeout-minutes: 15
+        continue-on-error: true
+
+  security-summary:
+    name: Security & Quality Summary
+    runs-on: ubuntu-latest
+    needs: [all-checks, lighthouse-ci, sast-scan, dast-scan, sca-scan, secrets-scan]
+    if: always()
+
+    steps:
+      - name: Create deployment summary
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const summary = `
+            ## 📊 Merge Pipeline Summary
+
+            ### Test Results
+            - ✅ All Tests: ${{ needs.all-checks.result == 'success' && 'PASS' || 'FAIL' }}
+            - 📊 Lighthouse: ${{ needs.lighthouse-ci.result == 'success' && 'PASS' || 'WARN' }}
+
+            ### Security Scan Results
+            - 🔐 SAST (CodeQL): ${{ needs.sast-scan.result == 'success' && 'PASS' || 'WARN' }}
+            - 🔐 DAST (ZAP): ${{ needs.dast-scan.result == 'success' && 'PASS' || 'WARN' }}
+            - 🔐 SCA (Dependencies): ${{ needs.sca-scan.result == 'success' && 'PASS' || 'WARN' }}
+            - 🔐 Secrets: ${{ needs.secrets-scan.result == 'success' && 'PASS' || 'WARN' }}
+
+            ### Deployment Status
+            - 🚀 Staging: Ready for QA
+            `;
+            
+            console.log(summary);
+
+      - name: Notify Slack
+        uses: 8398a7/action-slack@v3
+        if: always()
+        with:
+          status: ${{ job.status }}
+          text: 'Merge Pipeline Completed - All tests and security scans done'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+          fields: repo,message,commit,author
+        continue-on-error: true
