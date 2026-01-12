@@ -68,20 +68,20 @@ This test automation pipeline is built on **agile** and **CI/CD principles**, en
 ✅ **Automated checks gate every change** through the pipeline  
 ✅ **Feedback is fast** with parallelized, intelligent test execution  
 ✅ **Quality metrics** are continuously monitored and reported  
-✅ **Security, accessibility, and performance** are non-negotiable  
+✅ **Security, accessibility, and performance** are non-negotiable
 
 ### Key Technologies
 
-| Tool | Purpose | Version |
-|------|---------|---------|
-| **Playwright** | Cross-browser E2E & UI automation | 1.57+ |
-| **Jest** | Unit tests, API contract testing, mocking | 29.7+ |
-| **TypeScript** | Type-safe test code | 5.3+ |
-| **ESLint + Prettier** | Code linting and formatting | Latest |
-| **Axe Core** | Automated accessibility testing (WCAG) | 4.8+ |
-| **K6** | API load/performance testing | Latest |
-| **Lighthouse CI** | Performance & PWA audits | Latest |
-| **SonarQube** | Code quality & security analysis | Integrated |
+| Tool                  | Purpose                                   | Version    |
+| --------------------- | ----------------------------------------- | ---------- |
+| **Playwright**        | Cross-browser E2E & UI automation         | 1.57+      |
+| **Jest**              | Unit tests, API contract testing, mocking | 29.7+      |
+| **TypeScript**        | Type-safe test code                       | 5.3+       |
+| **ESLint + Prettier** | Code linting and formatting               | Latest     |
+| **Axe Core**          | Automated accessibility testing (WCAG)    | 4.8+       |
+| **K6**                | API load/performance testing              | Latest     |
+| **Lighthouse CI**     | Performance & PWA audits                  | Latest     |
+| **SonarQube**         | Code quality & security analysis          | Integrated |
 
 ---
 
@@ -92,24 +92,24 @@ This framework follows the **test pyramid** pattern to optimize speed, reliabili
 ```
                     🚀 E2E & Integration Tests (10%)
                   Critical user journeys, cross-service flows
-                        
+
                   ⚙️ API & Contract Tests (20%)
               Service endpoints, request/response validation
-              
+
       ✔️ Unit Tests (70%)
    Business logic, utility functions, component behavior
 ```
 
 ### Test Categories
 
-| Category | Location | Tools | Purpose | Execution Speed |
-|----------|----------|-------|---------|-----------------|
-| **Unit** | `tests/unit/` | Jest | Test individual functions/modules in isolation | ~100ms |
-| **API** | `tests/api/` | Jest + Supertest | Validate API contracts, endpoints, response schemas | ~500ms |
-| **Smoke** | `tests/smoke/` | Playwright | Critical happy-path scenarios; fast gate checks | ~2s per test |
-| **E2E** | `tests/e2e/` | Playwright | Complete user workflows across browsers | ~5s per test |
-| **Accessibility (a11y)** | `tests/e2e/accessibility.spec.ts` | Playwright + Axe | WCAG 2.1 compliance validation | ~3s per test |
-| **Performance** | `k6/` | K6 + Lighthouse | Load testing, performance profiling, PWA audits | Varies |
+| Category                 | Location                          | Tools            | Purpose                                             | Execution Speed |
+| ------------------------ | --------------------------------- | ---------------- | --------------------------------------------------- | --------------- |
+| **Unit**                 | `tests/unit/`                     | Jest             | Test individual functions/modules in isolation      | ~100ms          |
+| **API**                  | `tests/api/`                      | Jest + Supertest | Validate API contracts, endpoints, response schemas | ~500ms          |
+| **Smoke**                | `tests/smoke/`                    | Playwright       | Critical happy-path scenarios; fast gate checks     | ~2s per test    |
+| **E2E**                  | `tests/e2e/`                      | Playwright       | Complete user workflows across browsers             | ~5s per test    |
+| **Accessibility (a11y)** | `tests/e2e/accessibility.spec.ts` | Playwright + Axe | WCAG 2.1 compliance validation                      | ~3s per test    |
+| **Performance**          | `k6/`                             | K6 + Lighthouse  | Load testing, performance profiling, PWA audits     | Varies          |
 
 ---
 
@@ -242,10 +242,11 @@ Tests are configured to run against **staging/production** URLs:
 
 ```typescript
 // Set via environment variables or .env file
-baseURL: process.env.TEST_URL || 'https://digital.va.gov'
+baseURL: process.env.TEST_URL || 'https://digital.va.gov';
 ```
 
 Before production deployment:
+
 1. Run full test suite in staging
 2. Validate synthetic monitoring probes
 3. Execute manual smoke tests on canary deployment
@@ -298,27 +299,31 @@ Use Gherkin-style comments for complex E2E scenarios:
 test('User login flow', async ({ page }) => {
   // Given a registered user
   await page.goto('/login');
-  
+
   // When they enter valid credentials
   await page.fill('input[name="username"]', 'user@va.gov');
   await page.fill('input[name="password"]', 'secure-pass');
   await page.click('button:has-text("Sign In")');
-  
+
   // Then they are redirected to the dashboard
   await expect(page).toHaveURL('/dashboard');
-  await expect(page.locator('[data-testid="greeting"]')).toContainText('Welcome');
+  await expect(page.locator('[data-testid="greeting"]')).toContainText(
+    'Welcome',
+  );
 });
 ```
 
 ### 4. **Sprint-Based Test Planning**
 
 **Each Sprint:**
+
 - Allocate **15-20%** of sprint capacity for testing & test maintenance
 - Create explicit test tasks in the sprint backlog
 - Review and refactor flaky tests weekly
 - Update test documentation as acceptance criteria evolve
 
 **Risk-Based Testing:**
+
 - Prioritize tests for high-risk features (authentication, payments, data)
 - Automate critical paths; keep manual testing for edge cases
 - Periodically audit test coverage vs. business risk map
@@ -326,11 +331,13 @@ test('User login flow', async ({ page }) => {
 ### 5. **Continuous Feedback Loop**
 
 **Daily:**
+
 - Check CI/CD pipeline status in standup
 - Triage failed tests immediately; don't accumulate debt
 - Share test insights with developers
 
 **Sprint Retrospective:**
+
 - Review test flakiness trends
 - Discuss automation ROI (cost vs. bugs caught)
 - Identify tests to remove, refactor, or add
@@ -468,6 +475,7 @@ npm run format:check
 - API endpoints: All happy path + error scenarios
 
 View coverage:
+
 ```bash
 npm run test
 open coverage/index.html
@@ -497,6 +505,7 @@ Please see [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines on:
 - Review process
 
 **Quick Summary:**
+
 1. Create a feature branch: `git checkout -b feature/test-xxx`
 2. Write tests FIRST (TDD)
 3. Implement feature to pass tests
@@ -534,6 +543,7 @@ npx playwright show-trace trace.zip
 ```
 
 **Solutions:**
+
 - Add explicit waits: `await page.waitForSelector(selector, { timeout: 5000 })`
 - Use more stable locators (data-testid > CSS > XPath)
 - Check for race conditions or timing assumptions
@@ -586,14 +596,7 @@ npx playwright install chromium
 
 This project is licensed under the ISC License. See `LICENSE` file for details.
 
-## Support & Contact
-
-For questions or issues:
-- 📧 Email: digital-services@va.gov
-- 🐛 Report bugs: [GitHub Issues](https://github.com/...)
-- 💬 Discussions: [GitHub Discussions](https://github.com/...)
-
 ---
 
 **Last Updated:** January 2026  
-**Maintained By:** VA Digital Services Team
+**Maintained By:** Marwan Sultan
