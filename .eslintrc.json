@@ -41,13 +41,65 @@
     ],
     "playwright/no-element-handle": "error",
     "playwright/no-eval": "error",
-    "playwright/no-wait-for-timeout": "warn"
+    "playwright/no-wait-for-timeout": "warn",
+    "playwright/no-networkidle": "error",
+    "playwright/prefer-web-first-assertions": "error"
   },
+  "ignorePatterns": ["jest.config.js", "lighthouse.config.js", "k6/**/*.js", "tests/fixtures/**", "tests/setup.ts", "tests/types/**"],
   "overrides": [
     {
-      "files": ["*.spec.ts", "*.test.ts"],
+      "files": ["*.spec.ts", "*.test.ts", "tests/seed.spec.ts"],
       "rules": {
-        "playwright/no-wait-for-timeout": "off"
+        "playwright/no-wait-for-timeout": "off",
+        "@typescript-eslint/explicit-function-return-types": "off"
+      }
+    },
+    {
+      "files": ["tests/api/**/*.ts"],
+      "rules": {
+        "playwright/no-conditional-in-test": "off",
+        "playwright/expect-expect": "off",
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/explicit-function-return-types": "off"
+      }
+    },
+    {
+      "files": ["playwright.config.ts"],
+      "rules": {
+        "@typescript-eslint/explicit-function-return-types": "off",
+        "@typescript-eslint/no-explicit-any": "off"
+      }
+    },
+    {
+      "files": ["tests/e2e/**/*.ts"],
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "warn",
+        "playwright/no-conditional-in-test": "warn",
+        "playwright/no-skipped-test": "warn",
+        "playwright/no-networkidle": "off"
+      }
+    },
+    {
+      "files": ["tests/smoke/**/*.ts"],
+      "rules": {
+        "playwright/no-networkidle": "off",
+        "@typescript-eslint/explicit-function-return-types": "off",
+        "@typescript-eslint/no-unused-vars": "off",
+        "playwright/prefer-web-first-assertions": "warn"
+      }
+    },
+    {
+      "files": ["tests/unit/**/*.ts"],
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "warn",
+        "@typescript-eslint/ban-types": "warn",
+        "playwright/no-conditional-in-test": "warn"
+      }
+    },
+    {
+      "files": ["tests/seed.spec.ts"],
+      "rules": {
+        "playwright/expect-expect": "off"
       }
     }
   ]

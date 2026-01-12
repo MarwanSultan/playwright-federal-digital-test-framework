@@ -1,6 +1,47 @@
 import { expect, test } from '@playwright/test';
 import { checkA11y, injectAxe } from 'axe-playwright';
 
+// Helper function to check input accessibility
+async function checkInputAccessibility(input: any): Promise<boolean> {
+  let ariaLabel: string | null = null;
+  try {
+    ariaLabel = await input.getAttribute('aria-label');
+  } catch {
+    // Continue if getAttribute fails
+  }
+  return !!ariaLabel;
+}
+
+// Helper function to check associated label
+async function checkAssociatedLabel(page: any, inputId: string | null): Promise<boolean> {
+  if (!inputId) return false;
+  const label = page.locator(`label[for="${inputId}"]`);
+  try {
+    return await label.isVisible();
+  } catch {
+    return false;
+  }
+}
+
+// Helper function to evaluate color contrast
+async function evaluateColorContrast(): Promise<unknown> {
+  return new Promise<unknown>((resolve, reject) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const axe = (globalThis as any).axe;
+    if (!axe) {
+      reject(new Error('axe not loaded'));
+      return;
+    }
+    axe.run(
+      { rules: { 'color-contrast': { enabled: true } } },
+      (error: Error | null, results: { violations: unknown[] }) => {
+        if (error) reject(error);
+        else resolve(results.violations);
+      },
+    );
+  });
+}
+
 test.describe('Accessibility Compliance - WCAG 2.1 Level AA', () => {
   test('should not have accessibility violations on homepage', async ({
     page,
@@ -32,7 +73,8 @@ test.describe('Accessibility Compliance - WCAG 2.1 Level AA', () => {
 
   test('should have proper heading hierarchy', async ({ page }) => {
     await page.goto('https://digital.va.gov', {
-      
+      waitUntil: 'domcontentloaded',
+    });
 
     const headings = page.locator('h1, h2, h3, h4, h5, h6');
     const headingCount = await headings.count();
@@ -52,7 +94,8 @@ test.describe('Accessibility Compliance - WCAG 2.1 Level AA', () => {
 
   test('should have alt text for images', async ({ page }) => {
     await page.goto('https://digital.va.gov', {
-      
+      waitUntil: 'domcontentloaded',
+    });
 
     const images = page.locator('img');
     const imageCount = await images.count();
@@ -82,62 +125,34 @@ test.describe('Accessibility Compliance - WCAG 2.1 Level AA', () => {
     const inputs = page.locator('input');
     const inputCount = await inputs.count();
 
-    if (inputCount > 0) {
-      for (let i = 0; i < Math.min(inputCount, 5); i++) {
-        const input = inputs.nth(i);
-        let ariaLabel: string | null = null;
-        try {
-          ariaLabel = await input.getAttribute('aria-label');
-        } catch {
-          // Continue if getAttribute fails
-        }
+    if (inputCount === 0) return;
 
-        const inputId = await input.getAttribute('id');
-        let labelVisible = false;
-        if (inputId) {
-          const label = page.locator(`label[for="${inputId}"]`);
-          try {
-            labelVisible = await label.isVisible();
-          } catch {
-            // Continue if isVisible fails
-          }
-        }
+    for (let i = 0; i < Math.min(inputCount, 5); i++) {
+      const input = inputs.nth(i);
+      const hasAriaLabel = await checkInputAccessibility(input);
+      const inputId = await input.getAttribute('id');
+      const hasLabel = await checkAssociatedLabel(page, inputId);
 
-        // Input should have either aria-label or associated label
-        if (!(ariaLabel || labelVisible)) {
-          // Some environments may not include all labels; skip locally to avoid flaky failures
-          if (!process.env.CI) {
-            console.warn(
-              'Missing ARIA label or visible label for input — skipping locally',
-            );
-            test.skip(true, 'Missing ARIA label or visible label for input');
-            return;
-          }
-        }
-
-        expect(ariaLabel || labelVisible).toBeTruthy();
+      if (!(hasAriaLabel || hasLabel) && !process.env.CI) {
+        console.warn(
+          'Missing ARIA label or visible label for input — skipping locally',
+        );
+        test.skip(true, 'Missing ARIA label or visible label for input');
+        return;
       }
+
+      expect(hasAriaLabel || hasLabel).toBeTruthy();
     }
   });
 
   test('should have sufficient color contrast', async ({ page }) => {
     await page.goto('https://digital.va.gov', {
-      
+      waitUntil: 'domcontentloaded',
+    });
     await injectAxe(page);
 
     // Check for color contrast violations specifically
-    const results = await page.evaluate(() => {
-      return new Promise<unknown>((resolve) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (window as any).axe.run(
-          { rules: { 'color-contrast': { enabled: true } } },
-          (error: Error | null, results: { violations: unknown[] }) => {
-            if (error) throw error;
-            resolve(results.violations);
-          },
-        );
-      });
-    });
+    const results = await page.evaluate(evaluateColorContrast);
 
     // If we find violations, allow skipping on local runs to avoid false negatives
     // results is expected to be an array
@@ -156,7 +171,8 @@ test.describe('Accessibility Compliance - WCAG 2.1 Level AA', () => {
 
   test('should support keyboard navigation', async ({ page }) => {
     await page.goto('https://digital.va.gov', {
-      
+      waitUntil: 'domcontentloaded',
+    });
 
     // Test tabbing through interactive elements
     const interactiveElements = page.locator(
@@ -181,7 +197,8 @@ test.describe('Accessibility Compliance - WCAG 2.1 Level AA', () => {
 
   test('should have proper focus indicators', async ({ page }) => {
     await page.goto('https://digital.va.gov', {
-      
+      waitUntil: 'domcontentloaded',
+    });
 
     const buttons = page.locator('button');
     const firstButton = buttons.first();
@@ -191,7 +208,7 @@ test.describe('Accessibility Compliance - WCAG 2.1 Level AA', () => {
 
       // Get computed style to verify focus indicator exists
       const outline = await firstButton.evaluate((el) => {
-        return window.getComputedStyle(el).outline;
+        return globalThis.getComputedStyle(el).outline;
       });
 
       // Focus indicator should be visible (outline, box-shadow, etc.)
@@ -201,7 +218,8 @@ test.describe('Accessibility Compliance - WCAG 2.1 Level AA', () => {
 
   test('should have proper semantic HTML', async ({ page }) => {
     await page.goto('https://digital.va.gov', {
-      
+      waitUntil: 'domcontentloaded',
+    });
 
     // Check for proper use of semantic elements
     const main = page.locator('main');
@@ -221,7 +239,8 @@ test.describe('Accessibility Compliance - WCAG 2.1 Level AA', () => {
 
   test('should have proper language attribute', async ({ page }) => {
     await page.goto('https://digital.va.gov', {
-      
+      waitUntil: 'domcontentloaded',
+    });
 
     const htmlLang = await page.locator('html').getAttribute('lang');
     expect(htmlLang).toBeTruthy();
@@ -230,7 +249,8 @@ test.describe('Accessibility Compliance - WCAG 2.1 Level AA', () => {
 
   test('should have descriptive page title', async ({ page }) => {
     await page.goto('https://digital.va.gov', {
-      
+      waitUntil: 'domcontentloaded',
+    });
 
     const title = await page.title();
     expect(title).toBeTruthy();
@@ -238,7 +258,8 @@ test.describe('Accessibility Compliance - WCAG 2.1 Level AA', () => {
 
   test('should have skip to main content link', async ({ page }) => {
     await page.goto('https://digital.va.gov', {
-      
+      waitUntil: 'domcontentloaded',
+    });
 
     const skipLink = page.locator('a:has-text("skip"), a[href="#main"]');
     const skipLinkVisible = await skipLink.isVisible().catch(() => false);
@@ -249,7 +270,8 @@ test.describe('Accessibility Compliance - WCAG 2.1 Level AA', () => {
 
   test('should properly announce dynamic content changes', async ({ page }) => {
     await page.goto('https://digital.va.gov', {
-      
+      waitUntil: 'domcontentloaded',
+    });
 
     // Check for live regions
     const liveRegions = page.locator('[aria-live]');
@@ -269,7 +291,8 @@ test.describe('Accessibility Compliance - WCAG 2.1 Level AA', () => {
     });
 
     await page.goto('https://digital.va.gov', {
-      
+      waitUntil: 'domcontentloaded',
+    });
 
     // Page should not automatically redirect
     expect(page.url()).toContain('digital.va.gov');
@@ -289,7 +312,8 @@ test.describe('Accessibility Compliance - WCAG 2.1 Level AA', () => {
     page,
   }) => {
     await page.goto('https://digital.va.gov', {
-      
+      waitUntil: 'domcontentloaded',
+    });
 
     // Check for animations with high frequency
     const animations = page.locator(
@@ -306,7 +330,8 @@ test.describe('Accessibility - Mobile & Touch', () => {
   test('should be accessible on mobile viewport', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto('https://digital.va.gov', {
-      
+      waitUntil: 'domcontentloaded',
+    });
 
     // Check for mobile-specific accessibility issues
     const buttons = page.locator('button');
@@ -323,7 +348,8 @@ test.describe('Accessibility - Mobile & Touch', () => {
   test('should support screen reader text for mobile', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto('https://digital.va.gov', {
-      
+      waitUntil: 'domcontentloaded',
+    });
 
     // Check for sr-only or similar visually hidden text
     const srOnlyElements = page.locator(

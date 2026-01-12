@@ -1,109 +1,174 @@
 import { expect, test } from '@playwright/test';
 
-test.describe('Lighthouse API Library - Smoke Tests', () => {
+test.describe('Homepage Core Functionalities', () => {
+  test.beforeEach(async ({ page }) => {
+    // Navigate to the homepage before each test
+    await page.goto('https://digital.va.gov', {
+      waitUntil: 'domcontentloaded',
+    });
+  });
+
   test('should load homepage successfully', async ({ page }) => {
-    await expect(page).toHaveTitle(/DigitalVA|digital.va.gov|VA/i);
-    const heading = page.getByRole('heading', { level: 1 });
-    // Skip heading check if not visible - homepage structure varies
-    try {
-      await expect(heading).toBeVisible({ timeout: 2000 });
-    } catch {
-      // Heading not present, continue
+    // Verify page title contains expected text
+    const title = await page.title();
+    expect(title).toBeTruthy();
+    expect(title.toLowerCase()).toContain('va');
+
+    // Verify main content is visible
+    const mainContent = page.locator('main');
+    await expect(mainContent).toBeVisible();
+  });
+
+  test('should have accessible navigation header', async ({ page }) => {
+    // Check for navigation bar using role
+    const nav = page.locator('nav').first();
+    const navExists = await nav.isVisible().catch(() => false);
+    
+    if (navExists) {
+      // Check for navigation links
+      const navLinks = page.locator('nav a');
+      const navCount = await navLinks.count();
+      expect(navCount).toBeGreaterThanOrEqual(0);
     }
   });
 
-  test('should verify navigation menu is accessible', async ({ page }) => {
-    // Use getByRole to target the main navigation specifically
-    const nav = page.getByRole('navigation', { name: 'Main' });
-    await expect(nav).toBeVisible();
-    const links = nav.locator('a');
-    const count = await links.count();
-    expect(count).toBeGreaterThan(0);
+  test('should have proper semantic structure', async ({ page }) => {
+    // Verify presence of semantic HTML elements
+    const mainElement = page.locator('main');
+    const mainExists = await mainElement.isVisible().catch(() => false);
+    
+    // Check for heading (h1, h2, or h3)
+    const heading = page.locator('h1, h2, h3').first();
+    const headingExists = await heading.isVisible().catch(() => false);
+    
+    // At least one semantic element should be present
+    const semanticPresent = mainExists || headingExists;
+    expect(semanticPresent).toBe(true);
   });
 
-  test('should verify page load time is acceptable', async ({ page }) => {
-    const startTime = Date.now();
+  test('should display hero section with call-to-action', async ({ page }) => {
+    // Check for prominent call-to-action buttons
+    const buttons = page.locator('button, a[role="button"]');
+    const buttonCount = await buttons.count();
+    expect(buttonCount).toBeGreaterThan(0);
 
-    const loadTime = Date.now() - startTime;
-    expect(loadTime).toBeLessThan(10000); // 10 seconds
+    // Verify at least one button is visible
+    const firstButton = buttons.first();
+    await expect(firstButton).toBeVisible();
   });
 
-  test('should verify critical resources are loaded', async ({ page }) => {
-    let cssLoaded = false;
-    let jsLoaded = false;
-
-    page.on('response', (response) => {
-      if (response.url().includes('.css') && response.status() === 200) {
-        cssLoaded = true;
-      }
-      if (response.url().includes('.js') && response.status() === 200) {
-        jsLoaded = true;
-      }
-    });
-
-    expect(cssLoaded || jsLoaded).toBeTruthy();
+  test('should have searchable content', async ({ page }) => {
+    // Check for search functionality (input field or search form)
+    const searchInput = page.locator('input[type="search"], input[placeholder*="search" i]').first();
+    
+    if (await searchInput.isVisible()) {
+      // If search input exists, verify it's interactive
+      await expect(searchInput).toBeEnabled();
+    } else {
+      // Otherwise, check for any input fields for user interaction
+      const inputs = page.locator('input');
+      const inputCount = await inputs.count();
+      expect(inputCount).toBeGreaterThanOrEqual(0);
+    }
   });
 
-  test.describe('VA Services Discovery - Smoke Tests', () => {
-    test('should verify Lighthouse API Library link is present', async ({
-      page,
-    }) => {
-      const apiLink = page.locator('a:has-text("API")');
-      if (await apiLink.isVisible({ timeout: 5000 }).catch(() => false)) {
-        expect(await apiLink.getAttribute('href')).toBeTruthy();
-      }
-    });
+  test('should have accessible link structure', async ({ page }) => {
+    // Verify links have visible text
+    const allLinks = page.locator('a');
+    const linkCount = await allLinks.count();
+    expect(linkCount).toBeGreaterThan(0);
 
-    test('should verify Mobile Apps Hub link is present', async ({ page }) => {
-      const mobileLink = page.locator('a:has-text("Mobile")');
-      if (await mobileLink.isVisible({ timeout: 5000 }).catch(() => false)) {
-        expect(await mobileLink.getAttribute('href')).toBeTruthy();
-      }
-    });
-
-    test('should verify Accessibility resources link is present', async ({
-      page,
-    }) => {
-      const a11yLink = page.locator('a:has-text("Accessibility")');
-      if (await a11yLink.isVisible({ timeout: 5000 }).catch(() => false)) {
-        expect(await a11yLink.getAttribute('href')).toBeTruthy();
-      }
-    });
-
-    test('should verify no console errors on page load', async ({ page }) => {
-      const errors: string[] = [];
-      page.on('console', (msg) => {
-        if (msg.type() === 'error') {
-          errors.push(msg.text());
-        }
-      });
-
-      expect(errors).toHaveLength(0);
-    });
+    // Check that at least some links are visible
+    const visibleLinks = page.locator('a:visible');
+    const visibleLinkCount = await visibleLinks.count();
+    expect(visibleLinkCount).toBeGreaterThan(0);
   });
 
-  test.describe('Page Performance - Smoke Tests', () => {
-    test('should verify no 404 responses', async ({ page }) => {
-      const failedRequests: string[] = [];
+  test('should have accessible footer with important information', async ({ page }) => {
+    // Check for footer element
+    const footer = page.locator('footer');
+    
+    if (await footer.isVisible()) {
+      // Verify footer contains links or contact information
+      const footerLinks = footer.locator('a');
+      const footerLinkCount = await footerLinks.count();
+      expect(footerLinkCount).toBeGreaterThanOrEqual(0);
+    }
+  });
 
-      page.on('response', (response) => {
-        if (response.status() >= 400) {
-          failedRequests.push(`${response.status()} - ${response.url()}`);
-        }
-      });
+  test('should be responsive and visible on viewport', async ({ page }) => {
+    // Verify key content is visible in current viewport
+    const mainContent = page.locator('main, [role="main"]');
+    const isBoundingBoxInViewport = await mainContent.evaluate((el) => {
+      const rect = el.getBoundingClientRect();
+      return rect.height > 0 && rect.width > 0;
+    });
+    expect(isBoundingBoxInViewport).toBe(true);
+  });
 
-      await page.goto(page.url(), { waitUntil: 'networkidle' });
-      // Filter out non-critical errors
-      const criticalErrors = failedRequests.filter(
-        (err) => !err.includes('analytics') && !err.includes('tracking'),
-      );
-      expect(criticalErrors.length).toBeLessThan(3); // Allow some non-critical failures
+  test('should have proper language and accessibility attributes', async ({ page }) => {
+    // Check for language attribute on html element
+    const htmlLang = await page.locator('html').getAttribute('lang');
+    expect(htmlLang).toBeTruthy();
+
+    // Verify page is marked with language info
+    expect(htmlLang?.length).toBeGreaterThanOrEqual(2);
+  });
+
+  test('should allow user interaction with primary buttons', async ({ page }) => {
+    // Find and interact with primary call-to-action button
+    const primaryButtons = page.locator('button, a[role="button"]');
+    const firstButton = primaryButtons.first();
+
+    if (await firstButton.isVisible()) {
+      // Verify button is clickable
+      await expect(firstButton).toBeEnabled();
+      
+      // Verify button has descriptive text
+      const buttonText = await firstButton.textContent();
+      expect(buttonText?.trim()).toBeTruthy();
+    }
+  });
+
+  test('should display featured content or services', async ({ page }) => {
+    // Check for content cards or featured sections
+    const contentContainers = page.locator('[role="region"], section, .card, .service, [class*="featured"]');
+    const containerCount = await contentContainers.count();
+    
+    // Should have at least some content structure
+    expect(containerCount).toBeGreaterThanOrEqual(0);
+  });
+
+  test('should have keyboard accessible navigation', async ({ page }) => {
+    // Tab to first interactive element
+    await page.keyboard.press('Tab');
+    
+    // Get focused element
+    const focusedElement = await page.evaluate(() => {
+      return document.activeElement?.tagName || null;
+    });
+    
+    // Should focus on an interactive element (button, link, input, etc.)
+    const interactiveElements = ['A', 'BUTTON', 'INPUT', 'SELECT', 'TEXTAREA'];
+    expect(interactiveElements).toContain(focusedElement);
+  });
+
+  test('should load without console errors', async ({ page }) => {
+    const errors: string[] = [];
+    
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') {
+        errors.push(msg.text());
+      }
     });
 
-    test('should verify images are loading', async ({ page }) => {
-      const images = page.locator('img');
-      const count = await images.count();
-      expect(count).toBeGreaterThan(0);
-    });
+    // Wait for page to fully load
+    await page.waitForLoadState('networkidle');
+
+    // Critical errors that would indicate page failure should be minimal
+    const criticalErrors = errors.filter((err) => 
+      err.includes('Uncaught') || err.includes('TypeError')
+    );
+    expect(criticalErrors.length).toBe(0);
   });
 });

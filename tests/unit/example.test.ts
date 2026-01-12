@@ -1,15 +1,16 @@
-import { expect, test } from '@playwright/test';
+
+import { expect,test } from '@playwright/test';
 
 // tests/unit/example.test.ts
-test.describe('Unit Tests - Example Suite', () => {
-  test.describe('String Utilities', () => {
-    test('should convert string to uppercase', () => {
+describe('Unit Tests - Example Suite', () => {
+  describe('String Utilities', () => {
+    it('should convert string to uppercase', () => {
       const input = 'digital va gov';
       const result = input.toUpperCase();
       expect(result).toBe('DIGITAL VA GOV');
     });
 
-    test('should validate email format', () => {
+    it('should validate email format', () => {
       const validateEmail = (email: string): boolean => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
@@ -20,21 +21,21 @@ test.describe('Unit Tests - Example Suite', () => {
       expect(validateEmail('user@domain.co.uk')).toBe(true);
     });
 
-    test('should trim whitespace', () => {
+    it('should trim whitespace', () => {
       const input = '  digital.va.gov  ';
       const result = input.trim();
       expect(result).toBe('digital.va.gov');
     });
   });
 
-  test.describe('Array Operations', () => {
-    test('should filter array correctly', () => {
+  describe('Array Operations', () => {
+    it('should filter array correctly', () => {
       const numbers = [1, 2, 3, 4, 5];
       const evens = numbers.filter((n) => n % 2 === 0);
       expect(evens).toEqual([2, 4]);
     });
 
-    test('should map array elements', () => {
+    it('should map array elements', () => {
       const users = [
         { id: 1, name: 'John' },
         { id: 2, name: 'Jane' },
@@ -43,22 +44,22 @@ test.describe('Unit Tests - Example Suite', () => {
       expect(names).toEqual(['John', 'Jane']);
     });
 
-    test('should sort array', () => {
+    it('should sort array', () => {
       const numbers = [3, 1, 4, 1, 5, 9];
       const sorted = [...numbers].sort((a, b) => a - b);
       expect(sorted).toEqual([1, 1, 3, 4, 5, 9]);
     });
   });
 
-  test.describe('Object Operations', () => {
-    test('should merge objects', () => {
+  describe('Object Operations', () => {
+    it('should merge objects', () => {
       const obj1 = { a: 1, b: 2 };
       const obj2 = { b: 3, c: 4 };
       const merged = { ...obj1, ...obj2 };
       expect(merged).toEqual({ a: 1, b: 3, c: 4 });
     });
 
-    test('should deeply merge nested objects', () => {
+    it('should deeply merge nested objects', () => {
       const obj1 = {
         user: { id: 1, name: 'John' },
         settings: { theme: 'dark' },
@@ -85,8 +86,8 @@ test.describe('Unit Tests - Example Suite', () => {
     });
   });
 
-  test.describe('Date Operations', () => {
-    test('should calculate days between dates', () => {
+  describe('Date Operations', () => {
+    it('should calculate days between dates', () => {
       const calculateDaysBetween = (date1: Date, date2: Date): number => {
         const diffTime = Math.abs(date2.getTime() - date1.getTime());
         return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -97,7 +98,7 @@ test.describe('Unit Tests - Example Suite', () => {
       expect(calculateDaysBetween(start, end)).toBe(9);
     });
 
-    test('should format date correctly', () => {
+    it('should format date correctly', () => {
       const formatDate = (date: Date): string => {
         return date.toLocaleDateString('en-US', {
           year: 'numeric',
@@ -115,8 +116,8 @@ test.describe('Unit Tests - Example Suite', () => {
     });
   });
 
-  test.describe('Retry Logic', () => {
-    test('should retry failed operations', async () => {
+  describe('Retry Logic', () => {
+    it('should retry failed operations', async () => {
       let attempts = 0;
 
       const retryOperation = async (
@@ -148,8 +149,8 @@ test.describe('Unit Tests - Example Suite', () => {
     });
   });
 
-  test.describe('Debounce & Throttle', () => {
-    test('should debounce function calls', async ({}) => {
+  describe('Debounce & Throttle', () => {
+    it('should debounce function calls', async () => {
       let callCount = 0;
 
       const debounce = (fn: Function, delay: number) => {
@@ -178,7 +179,7 @@ test.describe('Unit Tests - Example Suite', () => {
       });
     });
 
-    test('should throttle function calls', async ({}) => {
+    it('should throttle function calls', async () => {
       let callCount = 0;
 
       const throttle = (fn: Function, limit: number) => {
@@ -213,8 +214,8 @@ test.describe('Unit Tests - Example Suite', () => {
     });
   });
 
-  test.describe('Error Handling', () => {
-    test('should handle errors gracefully', () => {
+  describe('Error Handling', () => {
+    it('should handle errors gracefully', () => {
       const safeJsonParse = (jsonString: string): any => {
         try {
           return JSON.parse(jsonString);
@@ -228,7 +229,7 @@ test.describe('Unit Tests - Example Suite', () => {
       expect(safeJsonParse('invalid json')).toBeNull();
     });
 
-    test('should validate required parameters', () => {
+    it('should validate required parameters', () => {
       const validateParams = (
         params: Record<string, any>,
         required: string[],
@@ -247,8 +248,8 @@ test.describe('Unit Tests - Example Suite', () => {
     });
   });
 
-  test.describe('Performance Utilities', () => {
-    test('should measure function execution time', () => {
+  describe('Performance Utilities', () => {
+    it('should measure function execution time', () => {
       const measureTime = (fn: () => void): number => {
         const start = performance.now();
         fn();
@@ -263,7 +264,7 @@ test.describe('Unit Tests - Example Suite', () => {
       expect(duration).toBeLessThan(1000); // Should be fast
     });
 
-    test('should cache function results', () => {
+    it('should cache function results', () => {
       let callCount = 0;
 
       const memoize = (fn: Function) => {
