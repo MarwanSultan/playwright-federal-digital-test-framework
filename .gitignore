@@ -1,8 +1,59 @@
+# Dependency directory
+/node_modules/
 
-# Playwright
-node_modules/
-/test-results/
+# Build artifacts
+/dist/
+build/
+out/
+
+# npm log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment variables / secrets
+.env
+.env.*.local
+.env.local
+
+# Playwright & test artifacts
 /playwright-report/
-/blob-report/
-/playwright/.cache/
-/playwright/.auth/
+/test-results/
+/allure-results/
+/allure-report/
+/coverage/
+/reports/
+/*.tmp
+*.temp
+
+# VS Code
+.vscode/
+.vscode-test/
+
+# OS & user specific
+.DS_Store
+Thumbs.db
+
+# TypeScript
+*.tsbuildinfo
+
+# Jest (if used in the repo)
+/coverage/
+/jest.config.js?cache/
+*.snap
+
+# Lighthouse & performance output
+/*.lhreport
+/*.lhr
+lighthouse-report/
+k6-results/
+
+# IDE/editor temp files
+*.swp
+*.swo
+*.sublime*
+.idea/
+
+# Misc
+*.log
